@@ -133,7 +133,7 @@ jobs:
       uses: actions/checkout@v4.1.0
     - name: sh
        
-      run: docker build -t siddharth67/solar-system:$GIT_COMMIT .
+      run: docker build -t siddharth67/solar-system:${{ github.sha }} .
   Trivy_Vulnerability_Scanner:
     name: Trivy Vulnerability Scanner
     runs-on:
