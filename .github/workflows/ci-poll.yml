@@ -1,6 +1,7 @@
 name: dummy
 on:
   workflow_dispatch:
+  push:
 env:
   MONGO_URI: mongodb+srv://supercluster.d83jj.mongodb.net/superData
 #   # This item has no matching transformer
