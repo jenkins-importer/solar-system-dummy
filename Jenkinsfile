@@ -65,6 +65,7 @@ pipeline {
             }
             steps {
                 sh 'npm test'
+                junit allowEmptyResults: true, stdioRetention: '', testResults: 'test-results.xml'
             }
         }
         stage('Code Coverage') {
@@ -113,7 +114,7 @@ pipeline {
     }
     post {
         always {
-            junit allowEmptyResults: true, stdioRetention: '', testResults: 'test-results.xml'
+            sh "echo post section"
         }
     }
 }
