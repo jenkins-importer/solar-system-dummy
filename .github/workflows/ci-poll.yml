@@ -23,21 +23,10 @@ jobs:
       - ubuntu-latest
     container:
       image: node:18-alpine
-#       # This item has no matching transformer
-#       docker:
-#         key: args
-#         value:
-#           isLiteral: true
-#           value: "-u root:root"
     steps:
-#     # This item has no matching transformer
-#     - timestamps:
-#         name: timestamps
-#         arguments: []
     - name: checkout
       uses: actions/checkout@v4.1.0
     - name: sh
-      shell: bash
       run: npm install --no-audit
   Dependency_Scanning_NPM_Dependency_Audit:
     name: Dependency Scanning-NPM Dependency Audit
