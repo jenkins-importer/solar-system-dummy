@@ -1,10 +1,4 @@
 pipeline {
-    // agent {
-    //     docker {
-    //       image 'node:18-alpine'
-    //       args '-u root:root'
-    //     }
-    // }
     agent {
         label 'us-west-1-ubuntu-22'
     }
@@ -16,9 +10,6 @@ pipeline {
         MONGO_USERNAME = credentials('mongo-db-username')
         MONGO_PASSWORD = credentials('mongo-db-password')
     }
-    options {
-        disableConcurrentBuilds abortPrevious: true
-    }
     stages {
         stage('Installing Dependencies') {
             agent {
@@ -26,9 +17,6 @@ pipeline {
                     image 'node:18-alpine'
                     args '-u root:root'
                 }
-            }
-            options {
-                timestamps()
             }
             steps {
                 sh 'npm install --no-audit'
@@ -59,6 +47,7 @@ pipeline {
                             --disableYarnAudit \
                             --prettyPrint''', odcInstallation: 'OWASP-DepCheck-10'
                         dependencyCheckPublisher failedTotalMedium: 1, failedTotalLow: 1, failedTotalHigh: 1, pattern: 'dependency-check-report.xml', stopBuild: true
+                        publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true, reportDir: './', reportFiles: 'dependency-check-jenkins.html', reportName: 'Dependency Check HTML Report', reportTitles: '', useWrapperFileDirectly: true])
                     }
                 }
             }
@@ -87,6 +76,7 @@ pipeline {
             steps {
                 catchError(buildResult: 'SUCCESS', message: 'Oops! it will be fixed in future releases', stageResult: 'UNSTABLE') {
                     sh 'npm run coverage'
+                    publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'coverage/lcov-report', reportFiles: 'index.html', reportName: 'Code Coverage HTML Report', reportTitles: '', useWrapperFileDirectly: true])
                 }
             }
         }
@@ -111,27 +101,6 @@ pipeline {
                         --format json -o trivy-image-CRITICAL-results.json
                 '''
             }
-            post {
-                always {
-                    sh '''
-                        trivy convert \
-                            --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
-                            --output trivy-image-MEDIUM-results.html trivy-image-MEDIUM-results.json 
-
-                        trivy convert \
-                            --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
-                            --output trivy-image-CRITICAL-results.html trivy-image-CRITICAL-results.json
-
-                        trivy convert \
-                            --format template --template "@/usr/local/share/trivy/templates/junit.tpl" \
-                            --output trivy-image-MEDIUM-results.xml  trivy-image-MEDIUM-results.json 
-
-                        trivy convert \
-                            --format template --template "@/usr/local/share/trivy/templates/junit.tpl" \
-                            --output trivy-image-CRITICAL-results.xml trivy-image-CRITICAL-results.json          
-                    '''
-                }
-            }
         }
         stage('Push Docker Image') {
             steps {
@@ -143,20 +112,7 @@ pipeline {
     }
     post {
         always {
-            script {
-                if (fileExists('solar-system-gitops-argocd')) {
-                    sh 'rm -rf solar-system-gitops-argocd'
-                }
-            }
             junit allowEmptyResults: true, stdioRetention: '', testResults: 'test-results.xml'
-            junit allowEmptyResults: true, stdioRetention: '', testResults: 'dependency-check-junit.xml'
-            junit allowEmptyResults: true, stdioRetention: '', testResults: 'trivy-image-CRITICAL-results.xml'
-            junit allowEmptyResults: true, stdioRetention: '', testResults: 'trivy-image-MEDIUM-results.xml'
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: './', reportFiles: 'zap_report.html', reportName: 'DAST - OWASP ZAP Report', reportTitles: '', useWrapperFileDirectly: true])
-            publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true, reportDir: './', reportFiles: 'trivy-image-CRITICAL-results.html', reportName: 'Trivy Image Critical Vul Report', reportTitles: '', useWrapperFileDirectly: true])
-            publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true, reportDir: './', reportFiles: 'trivy-image-MEDIUM-results.html', reportName: 'Trivy Image Medium Vul Report', reportTitles: '', useWrapperFileDirectly: true])
-            publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true, reportDir: './', reportFiles: 'dependency-check-jenkins.html', reportName: 'Dependency Check HTML Report', reportTitles: '', useWrapperFileDirectly: true])
-            publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'coverage/lcov-report', reportFiles: 'index.html', reportName: 'Code Coverage HTML Report', reportTitles: '', useWrapperFileDirectly: true])
         }
     }
 }
