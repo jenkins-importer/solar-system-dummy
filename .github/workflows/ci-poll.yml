@@ -1,36 +1,17 @@
-name: ci-pipeline-poll-scm
+name: dummy
 on:
   workflow_dispatch:
-    
-  push:
-    branches:
-    - branch-b
-    - convert-ci-pipeline-poll-scm-to-actions-20250425-060602
-  schedule:
-  - cron: 00 00 * * *
-  
 env:
   MONGO_URI: mongodb+srv://supercluster.d83jj.mongodb.net/superData
 #   # This item has no matching transformer
 #   MONGO_DB_CREDS:
 #   # This item has no matching transformer
   MONGO_USERNAME: superuser
-  # This item has no matching transformer
+#   # This item has no matching transformer
   MONGO_PASSWORD: SuperPassword
 jobs:
   Installing_Dependencies:
     name: Installing Dependencies
-    runs-on:
-      - ubuntu-latest
-    container:
-      image: node:18-alpine
-    steps:
-    - name: checkout
-      uses: actions/checkout@v4.1.0
-    - name: sh
-      run: npm install --no-audit
-  Dependency_Scanning_NPM_Dependency_Audit:
-    name: Dependency Scanning-NPM Dependency Audit
     runs-on:
       - ubuntu-latest
     container:
@@ -41,75 +22,57 @@ jobs:
 #         value:
 #           isLiteral: true
 #           value: "-u root:root"
-    needs: Installing_Dependencies
     steps:
     - name: checkout
       uses: actions/checkout@v4.1.0
-    - name: sh
-       
-      run: |-
-        npm audit --audit-level=critical
-        echo $?
-  Dependency_Scanning_OWASP_Dependency_Check:
-    name: Dependency Scanning-OWASP Dependency Check
+  Dependency_Scanning_NPM_Dependency_Audit:
+    name: Dependency Scanning-NPM Dependency Audit
     runs-on:
       - ubuntu-latest
     needs: Installing_Dependencies
     steps:
     - name: checkout
       uses: actions/checkout@v4.1.0
-#     # This item has no matching transformer
-#     - dependencyCheck:
-#       - key: additionalArguments
-#         value:
-#           isLiteral: true
-#           value: "\n                            --scan './' \n                            --out './'  \n                            --format 'ALL' \n                            --disableYarnAudit                             --prettyPrint"
-#       - key: odcInstallation
-#         value:
-#           isLiteral: true
-#           value: OWASP-DepCheck-10
-#     # This item has no matching transformer
-#     - dependencyCheckPublisher:
-#       - key: failedTotalCritical
-#         value:
-#           isLiteral: true
-#           value: 1
-#       - key: pattern
-#         value:
-#           isLiteral: true
-#           value: dependency-check-report.xml
-#       - key: stopBuild
-#         value:
-#           isLiteral: true
-#           value: true
   Unit_Testing:
     name: Unit Testing
     runs-on:
       - ubuntu-latest
     container:
       image: node:18-alpine
+#       # This item has no matching transformer
+#       docker:
+#         key: args
+#         value:
+#           isLiteral: true
+#           value: "-u root:root"
     needs:
     - Dependency_Scanning_NPM_Dependency_Audit
-    - Dependency_Scanning_OWASP_Dependency_Check
     steps:
-#     # This item has no matching transformer
-#     - retry:
-#         name: retry
-#         arguments:
-#         - isLiteral: true
-#           value: 2
+    - uses: nick-fields/retry@v3
+      with:
+        timeout_seconds: 60
+        max_attempts: 2
+        retry_on: error
+        command: npm test
     - name: checkout
       uses: actions/checkout@v4.1.0
-    - run: npm install --no-audit
-    - name: sh
-      run: npm test
-   
+    - name: Publish test results
+      uses: EnricoMi/publish-unit-test-result-action@v2.12.0
+      if: always()
+      with:
+        junit_files: test-results.xml
   Code_Coverage:
     name: Code Coverage
     runs-on:
       - ubuntu-latest
     container:
       image: node:18-alpine
+#       # This item has no matching transformer
+#       docker:
+#         key: args
+#         value:
+#           isLiteral: true
+#           value: "-u root:root"
     needs: Unit_Testing
     steps:
     - name: checkout
@@ -117,6 +80,12 @@ jobs:
     - run: npm install --no-audit
     - continue-on-error: true
       run: npm run coverage
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4.1.0
+      with:
+        if-no-files-found: ignore
+        name: Code Coverage HTML Report
+        path: coverage/lcov-report
   Build_Docker_Image:
     name: Build Docker Image
     runs-on:
@@ -125,9 +94,6 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v4.1.0
-    - name: sh
-       
-      run: docker build -t siddharth67/solar-system:${{ github.sha }} .
   Trivy_Vulnerability_Scanner:
     name: Trivy Vulnerability Scanner
     runs-on:
@@ -136,19 +102,28 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v4.1.0
-    - name: sh
-       
-      run: |-
-        trivy image siddharth67/solar-system:${{ github.sha }}                         --severity LOW,MEDIUM,HIGH                         --exit-code 0                         --quiet                         --format json -o trivy-image-MEDIUM-results.json
-        trivy image siddharth67/solar-system:${{ github.sha }}                         --severity CRITICAL                         --exit-code 1                         --quiet                         --format json -o trivy-image-CRITICAL-results.json
-    - name: sh
-       
-      run: |-
-        trivy convert                             --format template --template "@/usr/local/share/trivy/templates/html.tpl"                             --output trivy-image-MEDIUM-results.html trivy-image-MEDIUM-results.json
-        trivy convert                             --format template --template "@/usr/local/share/trivy/templates/html.tpl"                             --output trivy-image-CRITICAL-results.html trivy-image-CRITICAL-results.json
-        trivy convert                             --format template --template "@/usr/local/share/trivy/templates/junit.tpl"                             --output trivy-image-MEDIUM-results.xml  trivy-image-MEDIUM-results.json
-        trivy convert                             --format template --template "@/usr/local/share/trivy/templates/junit.tpl"                             --output trivy-image-CRITICAL-results.xml trivy-image-CRITICAL-results.json
-      if: always()
+    - name: Trivy Security Scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: "${{ vars.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ github.sha }}"
+        severity: CRITICAL
+        format: json
+        output: trivy-image-CRITICAL-results.json
+        exit-code: '1'
+        quiet: 'true'
+        ignore-unfixed: 'false'
+    - name: Upload Scan Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: trivy-image-CRITICAL-results
+        path: trivy-image-CRITICAL-results.json
+        retention-days: 30
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4.1.0
+      with:
+        if-no-files-found: ignore
+        name: Trivy Image Critical Vul Report
+        path: "."
   Push_Docker_Image:
     name: Push Docker Image
     runs-on:
@@ -157,16 +132,16 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v4.1.0
-#     # This item has no matching transformer
-#     - withDockerRegistry:
-#       - key: credentialsId
-#         value:
-#           isLiteral: true
-#           value: docker-hub-credentials
-#       - key: url
-#         value:
-#           isLiteral: true
-#           value: ''
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: "${{ vars.DOCKERHUB_USERNAME }}"
+        password: "${{ secrets.DOCKERHUB_TOKEN }}"
+    - name: Build and push
+      uses: docker/build-push-action@v6
+      with:
+        push: true
+        tags: "${{ vars.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME  }}:${{ github.sha }}"
   Post-Build:
     if: always()
     name: Post Build
@@ -175,76 +150,11 @@ jobs:
     needs:
     - Installing_Dependencies
     - Dependency_Scanning_NPM_Dependency_Audit
-    - Dependency_Scanning_OWASP_Dependency_Check
     - Unit_Testing
     - Code_Coverage
     - Build_Docker_Image
     - Trivy_Vulnerability_Scanner
     - Push_Docker_Image
     steps:
-#     # 'script' was not transformed because there is no suitable equivalent in GitHub Actions
-#     - name: script
-#       arguments:
-#       - key: scriptBlock
-#         value:
-#           isLiteral: true
-#           value: |-
-#             if (fileExists('solar-system-gitops-argocd')) {
-#                                 sh 'rm -rf solar-system-gitops-argocd'
-#                             }
-#       if: always()
-    - uses: actions/upload-artifact@v3
-      with:
-        name: junit-artifact
-        path: test-results.xml
-      if: always()
-    - uses: actions/upload-artifact@v3
-      with:
-        name: junit-artifact
-        path: dependency-check-junit.xml
-      if: always()
-    - uses: actions/upload-artifact@v3
-      with:
-        name: junit-artifact
-        path: trivy-image-CRITICAL-results.xml
-      if: always()
-    - uses: actions/upload-artifact@v3
-      with:
-        name: junit-artifact
-        path: trivy-image-MEDIUM-results.xml
-      if: always()
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v4.1.0
-      with:
-        if-no-files-found: ignore
-        name: DAST - OWASP ZAP Report
-        path: "."
-      if: always()
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v4.1.0
-      with:
-        if-no-files-found: ignore
-        name: Trivy Image Critical Vul Report
-        path: "."
-      if: always()
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v4.1.0
-      with:
-        if-no-files-found: ignore
-        name: Trivy Image Medium Vul Report
-        path: "."
-      if: always()
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v4.1.0
-      with:
-        if-no-files-found: ignore
-        name: Dependency Check HTML Report
-        path: "."
-      if: always()
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v4.1.0
-      with:
-        if-no-files-found: ignore
-        name: Code Coverage HTML Report
-        path: coverage/lcov-report
-      if: always()
+    - name: checkout
+      uses: actions/checkout@v4.1.0
