@@ -88,12 +88,6 @@ jobs:
       - ubuntu-latest
     container:
       image: node:18-alpine
-#       # This item has no matching transformer
-#       docker:
-#         key: args
-#         value:
-#           isLiteral: true
-#           value: "-u root:root"
     needs:
     - Dependency_Scanning_NPM_Dependency_Audit
     - Dependency_Scanning_OWASP_Dependency_Check
@@ -145,8 +139,8 @@ jobs:
     - name: sh
        
       run: |-
-        trivy image siddharth67/solar-system:$GIT_COMMIT                         --severity LOW,MEDIUM,HIGH                         --exit-code 0                         --quiet                         --format json -o trivy-image-MEDIUM-results.json
-        trivy image siddharth67/solar-system:$GIT_COMMIT                         --severity CRITICAL                         --exit-code 1                         --quiet                         --format json -o trivy-image-CRITICAL-results.json
+        trivy image siddharth67/solar-system:${{ github.sha }}                         --severity LOW,MEDIUM,HIGH                         --exit-code 0                         --quiet                         --format json -o trivy-image-MEDIUM-results.json
+        trivy image siddharth67/solar-system:${{ github.sha }}                         --severity CRITICAL                         --exit-code 1                         --quiet                         --format json -o trivy-image-CRITICAL-results.json
     - name: sh
        
       run: |-
