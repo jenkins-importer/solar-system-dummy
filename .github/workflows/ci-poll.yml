@@ -14,9 +14,9 @@ env:
 #   # This item has no matching transformer
 #   MONGO_DB_CREDS:
 #   # This item has no matching transformer
-#   MONGO_USERNAME:
-#   # This item has no matching transformer
-#   MONGO_PASSWORD:
+  MONGO_USERNAME: superuser
+  # This item has no matching transformer
+  MONGO_PASSWORD: SuperPassword
 jobs:
   Installing_Dependencies:
     name: Installing Dependencies
