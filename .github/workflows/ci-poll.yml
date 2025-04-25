@@ -106,39 +106,23 @@ jobs:
 #           value: 2
     - name: checkout
       uses: actions/checkout@v4.1.0
+    - run: npm install --no-audit
     - name: sh
-       
       run: npm test
+   
   Code_Coverage:
     name: Code Coverage
     runs-on:
       - ubuntu-latest
     container:
       image: node:18-alpine
-#       # This item has no matching transformer
-#       docker:
-#         key: args
-#         value:
-#           isLiteral: true
-#           value: "-u root:root"
     needs: Unit_Testing
     steps:
     - name: checkout
       uses: actions/checkout@v4.1.0
-#     # This item has no matching transformer
-#     - catchError:
-#       - key: buildResult
-#         value:
-#           isLiteral: true
-#           value: SUCCESS
-#       - key: message
-#         value:
-#           isLiteral: true
-#           value: Oops! it will be fixed in future releases
-#       - key: stageResult
-#         value:
-#           isLiteral: true
-#           value: UNSTABLE
+    - run: npm install --no-audit
+    - continue-on-error: true
+      run: npm run coverage
   Build_Docker_Image:
     name: Build Docker Image
     runs-on:
