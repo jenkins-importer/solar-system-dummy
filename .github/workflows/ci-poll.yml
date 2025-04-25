@@ -49,6 +49,7 @@ jobs:
     needs:
     - Dependency_Scanning_NPM_Dependency_Audit
     steps:
+    - uses: actions/checkout@v4.1.0
     - run: npm i --no-audit
     - uses: nick-fields/retry@v3
       with:
@@ -69,12 +70,6 @@ jobs:
       - ubuntu-latest
     container:
       image: node:18-alpine
-#       # This item has no matching transformer
-#       docker:
-#         key: args
-#         value:
-#           isLiteral: true
-#           value: "-u root:root"
     needs: Unit_Testing
     steps:
     - name: checkout
