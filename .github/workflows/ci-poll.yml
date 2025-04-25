@@ -49,6 +49,7 @@ jobs:
     needs:
     - Dependency_Scanning_NPM_Dependency_Audit
     steps:
+    - run: npm i --no-audit
     - uses: nick-fields/retry@v3
       with:
         timeout_seconds: 60
@@ -57,7 +58,6 @@ jobs:
         command: npm test
     - name: checkout
       uses: actions/checkout@v4.1.0
-    - run: npm i --no-audit
     - name: Publish test results
       uses: EnricoMi/publish-unit-test-result-action@v2.12.0
       if: always()
