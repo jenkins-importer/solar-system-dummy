@@ -40,7 +40,7 @@ pipeline {
                             --out \'./\'  
                             --format \'ALL\' 
                             --disableYarnAudit \
-                            --prettyPrint''', odcInstallation: 'OWASP-DepCheck-10'
+                            --prettyPrint''', nvdCredentialsId: 'owasp-dependency-check', odcInstallation: 'OWASP-DepCheck-10'
                         dependencyCheckPublisher failedTotalMedium: 1, failedTotalLow: 1, failedTotalHigh: 1, pattern: 'dependency-check-report.xml', stopBuild: true
                         publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true, reportDir: './', reportFiles: 'dependency-check-jenkins.html', reportName: 'Dependency Check HTML Report', reportTitles: '', useWrapperFileDirectly: true])
                     }
