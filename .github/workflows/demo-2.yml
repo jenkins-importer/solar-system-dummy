@@ -4,12 +4,15 @@ on:
   push:
   workflow_dispatch:
 
+env:
+  GREETING: "hello"
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - name: Create a text file
-      run: echo "Hello, world!" > hello.txt
+      run: echo "${{ env.GREETING }}, ${{ secrets.WORLD }}!" > hello.txt
     - name: Archive text file
       uses: actions/upload-artifact@v4
       with:
