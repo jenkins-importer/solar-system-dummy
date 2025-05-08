@@ -10,11 +10,20 @@ jobs:
     steps:
     - name: Create a text file
       run: echo "Hello, world!" > hello.txt
+    - name: Archive text file
+      uses: actions/upload-artifact@v2
+      with:
+        name: hello-artifact
+        path: hello.txt
 
   test:
     runs-on: ubuntu-latest
     needs: build
     steps:
+    - name: Download text file
+      uses: actions/download-artifact@v2
+      with:
+        name: hello-artifact
     - name: List file
       run: ls
     - name: Test file
