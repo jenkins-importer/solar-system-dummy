@@ -1,0 +1,29 @@
+name: folder-1/f-2/p-2
+on:
+  workflow_dispatch:
+jobs:
+  First_Stage:
+    name: First Stage
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: echo message
+      run: echo Starting the first stage...
+    - name: Sleep for 5 seconds
+      run: sleep 5s
+    - name: echo message
+      run: echo First stage completed.
+  Second_Stage:
+    name: Second Stage
+    runs-on: ubuntu-latest
+    needs: First_Stage
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: echo message
+      run: echo Starting the second stage...
+    - name: Sleep for 20 seconds
+      run: sleep 20s
+    - name: echo message
+      run: echo Second stage completed.
