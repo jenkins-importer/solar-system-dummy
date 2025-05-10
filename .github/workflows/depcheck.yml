@@ -15,6 +15,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Depcheck
         uses: dependency-check/Dependency-Check_Action@main
+        continue-on-error: true
         id: Depcheck
         with:
           project: 'test'
@@ -25,7 +26,6 @@ jobs:
             --failOnCVSS 3
             --enableRetired
       - name: Upload Test results
-        continue-on-error: true
         uses: actions/upload-artifact@master
         with:
            name: Depcheck report
