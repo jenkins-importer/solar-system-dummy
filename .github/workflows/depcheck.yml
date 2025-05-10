@@ -19,12 +19,13 @@ jobs:
         continue-on-error: true
         id: Depcheck
         with:
-            project: "'test'"
-            path: "'.'"
-            format: "'ALL'"
-            out: "'reports'"
-            args: "--scan './' --out './' --format 'ALL' --disableYarnAudit --prettyPrint"
-
+          project: 'test'
+          path: '.'
+          format: 'ALL'
+          out: 'reports' # this is the default, no need to specify unless you wish to override it
+          args: >
+            --failOnCVSS 3
+            --enableRetired
       - name: Upload Test results
         uses: actions/upload-artifact@master
         with:
