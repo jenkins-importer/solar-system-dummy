@@ -25,6 +25,7 @@ jobs:
             --failOnCVSS 3
             --enableRetired
       - name: Upload Test results
+        continue-on-error: true
         uses: actions/upload-artifact@master
         with:
            name: Depcheck report
