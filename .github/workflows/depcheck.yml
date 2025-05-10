@@ -9,6 +9,7 @@ on:
 jobs:
   depchecktest:
     runs-on: ubuntu-latest
+    
     name: depecheck_test
     steps:
       - name: Checkout
@@ -18,13 +19,12 @@ jobs:
         continue-on-error: true
         id: Depcheck
         with:
-          project: 'test'
-          path: '.'
-          format: 'HTML'
-          out: 'reports' # this is the default, no need to specify unless you wish to override it
-          args: >
-            --failOnCVSS 3
-            --enableRetired
+            project: "'test'"
+            path: "'.'"
+            format: "'ALL'"
+            out: "'reports'"
+            args: "--scan './' --out './' --format 'ALL' --disableYarnAudit --prettyPrint"
+
       - name: Upload Test results
         uses: actions/upload-artifact@master
         with:
