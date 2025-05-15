@@ -19,11 +19,12 @@ jobs:
         continue-on-error: true
         id: Depcheck
         with:
-          project: "'test'"
-          path: "'.'"
-          format: "'ALL'"
-          out: "'reports'"
+          project: test
+          path: "."
+          format: "ALL"
+          out: reports
           args: "--failOnCVSS 4"
+
 
 
       # - name: Depcheck
