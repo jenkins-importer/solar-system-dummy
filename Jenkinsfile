@@ -15,7 +15,7 @@ pipeline {
         stage('Installing Dependencies') {
             agent {
                 docker {
-                    image 'node-24'
+                    image 'node:24'
                     args '-u root:root'
                 }
             }
@@ -50,7 +50,7 @@ pipeline {
         stage('Unit Testing') {
             agent {
                 docker {
-                    image 'node-24'
+                    image 'node:24'
                     args '-u root:root'
                 }
             }
@@ -65,7 +65,7 @@ pipeline {
         stage('Code Coverage') {
             agent {
                 docker {
-                    image 'node-24'
+                    image 'node:24'
                     args '-u root:root'
                 }
             }
@@ -119,7 +119,7 @@ pipeline {
 //         stage('Installing Dependencies') {
 //             agent {
 //                 docker {
-//                     image 'node-24'
+//                     image 'node:24'
 //                     args '-u root:root'
 //                 }
 //             }
@@ -154,7 +154,7 @@ pipeline {
 //         stage('Unit Testing') {
 //             agent {
 //                 docker {
-//                     image 'node-24'
+//                     image 'node:24'
 //                     args '-u root:root'
 //                 }
 //             }
@@ -169,7 +169,7 @@ pipeline {
 //         stage('Code Coverage') {
 //             agent {
 //                 docker {
-//                     image 'node-24'
+//                     image 'node:24'
 //                     args '-u root:root'
 //                 }
 //             }
