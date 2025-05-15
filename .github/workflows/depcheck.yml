@@ -23,7 +23,8 @@ jobs:
           path: "'.'"
           format: "'ALL'"
           out: "'reports'"
-          args: "--scan './' --out './' --disableYarnAudit --prettyPrint --failOnCVSS 4"
+          args: "--failOnCVSS 4"
+
 
         # - name: Depcheck
       #   uses: dependency-check/Dependency-Check_Action@main
