@@ -7,20 +7,30 @@ on:
       - 'branch-b'
 
 jobs:
-  depchecktest:
-    runs-on: ubuntu-latest
-    
-    name: depecheck_test
-    steps:
-      - name: Checkout
+    Unit_Testing:
+      name: Unit Testing
+      runs-on:
+        - self-hosted
+        - us-west-1-ubuntu-22
+      container:
+        image: node:18-alpine
+      steps:
+      - name: checkout
         uses: actions/checkout@v4
-
       - uses: nick-fields/retry@v3
         with:
-          timeout_minutes: 20
+          timeout_minutes: 60
           max_attempts: 2
           retry_on: error
-          command: exit 1
+          command: npm test
+      - name: Publish Test Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: test-results.xml
+      - name: checkout
+        uses: actions/checkout@v4.1.0
+
       # - name: Depcheck
       #   uses: dependency-check/Dependency-Check_Action@main
       #   continue-on-error: true
