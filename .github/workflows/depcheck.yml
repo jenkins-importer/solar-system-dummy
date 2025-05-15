@@ -6,12 +6,15 @@ on:
     branches:
       - 'branch-b'
 
+env:
+  MONGO_URI: mongodb+srv://supercluster.d83jj.mongodb.net/superData
+  MONGO_USERNAME: superuser
+  MONGO_PASSWORD: xxxx
 jobs:
     Unit_Testing:
       name: Unit Testing
       runs-on:
-        - self-hosted
-        - us-west-1-ubuntu-22
+        - ubuntu-latest
       container:
         image: node:18-alpine
       steps:
