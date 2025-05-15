@@ -19,13 +19,24 @@ jobs:
         continue-on-error: true
         id: Depcheck
         with:
-          project: 'test'
-          path: '.'
-          format: 'ALL'
-          out: 'reports' # this is the default, no need to specify unless you wish to override it
-          args: >
-            --failOnCVSS 3
-            --enableRetired
+          project: "'test'"
+          path: "'.'"
+          format: "'ALL'"
+          out: "'reports'"
+          args: "--scan './' --out './' --disableYarnAudit --prettyPrint --failOnCVSS 4"
+
+        # - name: Depcheck
+      #   uses: dependency-check/Dependency-Check_Action@main
+      #   continue-on-error: true
+      #   id: Depcheck
+      #   with:
+      #     project: 'test'
+      #     path: '.'
+      #     format: 'ALL'
+      #     out: 'reports' # this is the default, no need to specify unless you wish to override it
+      #     args: >
+      #       --failOnCVSS 3
+      #       --enableRetired
       - name: Upload Test results
         uses: actions/upload-artifact@master
         with:
