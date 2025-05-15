@@ -20,6 +20,7 @@ jobs:
       steps:
       - name: checkout
         uses: actions/checkout@v4
+      - run: npm i --no-audit
       - uses: nick-fields/retry@v3
         with:
           timeout_minutes: 60
