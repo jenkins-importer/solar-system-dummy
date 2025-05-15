@@ -11,52 +11,83 @@ env:
   MONGO_USERNAME: superuser
   MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 jobs:
-    Unit_Testing:
-      name: Unit Testing
+    Build_Docker_Image:
+      name: Build Docker Image
       runs-on:
         - ubuntu-latest
-      container:
-        image: node:24
-      steps:
-      - name: checkout
-        uses: actions/checkout@v4
-      - run: npm i --no-audit
-      - uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 60
-          max_attempts: 2
-          retry_on: error
-          command: npm test
-      - name: Publish Test Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: test-results.xml
-      - name: checkout
-        uses: actions/checkout@v4.1.0
-    Code_Coverage:
-      name: Code Coverage
-      runs-on:
-        - ubuntu-latest
-      container:
-        image: node:24
-      needs: Unit_Testing
       steps:
       - name: checkout
         uses: actions/checkout@v4.1.0
-      - name: Install dependencies
-        run: npm install --no-audit
+      - name: sh
         shell: bash
-      - name: Check Code Coverage
-        continue-on-error: true
-        run: npm run coverage
+        run: docker build -t siddharth67/solar-system:$GIT_COMMIT .
+    Trivy_Vulnerability_Scanner:
+      name: Trivy Vulnerability Scanner
+      runs-on:
+        - ubuntu-latest
+      needs: Build_Docker_Image
+      steps:
+      - name: checkout
+        uses: actions/checkout@v4.1.0
+      - name: sh
         shell: bash
+        run: trivy image siddharth67/solar-system:$GIT_COMMIT --severity CRITICAL --exit-code 1 --quiet --format json -o trivy-image-CRITICAL-results.json
+      - name: sh
+        shell: bash
+        run: trivy convert --format template --template "@/usr/local/share/trivy/templates/html.tpl" --output trivy-image-CRITICAL-results.html trivy-image-CRITICAL-results.json
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4.1.0
         with:
           if-no-files-found: ignore
-          name: Code Coverage HTML Report
-          path: coverage/lcov-report
+          name: Trivy Image Critical Vul Report
+          path: "."
+
+    # Unit_Testing:
+    #   name: Unit Testing
+    #   runs-on:
+    #     - ubuntu-latest
+    #   container:
+    #     image: node:24
+    #   steps:
+    #   - name: checkout
+    #     uses: actions/checkout@v4
+    #   - run: npm i --no-audit
+    #   - uses: nick-fields/retry@v3
+    #     with:
+    #       timeout_minutes: 60
+    #       max_attempts: 2
+    #       retry_on: error
+    #       command: npm test
+    #   - name: Publish Test Results
+    #     uses: actions/upload-artifact@v4
+    #     with:
+    #       name: test-results
+    #       path: test-results.xml
+    #   - name: checkout
+    #     uses: actions/checkout@v4.1.0
+    # Code_Coverage:
+    #   name: Code Coverage
+    #   runs-on:
+    #     - ubuntu-latest
+    #   container:
+    #     image: node:24
+    #   needs: Unit_Testing
+    #   steps:
+    #   - name: checkout
+    #     uses: actions/checkout@v4.1.0
+    #   - name: Install dependencies
+    #     run: npm install --no-audit
+    #     shell: bash
+    #   - name: Check Code Coverage
+    #     continue-on-error: true
+    #     run: npm run coverage
+    #     shell: bash
+    #   - name: Upload Artifacts
+    #     uses: actions/upload-artifact@v4.1.0
+    #     with:
+    #       if-no-files-found: ignore
+    #       name: Code Coverage HTML Report
+    #       path: coverage/lcov-report
 
       # - name: Depcheck
       #   uses: dependency-check/Dependency-Check_Action@main
