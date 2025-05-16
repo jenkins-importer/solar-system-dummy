@@ -23,7 +23,7 @@ jobs:
         shell: bash
 
       - name: Trivy Security Scan
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.30.0
         with:
           image-ref: "${{ vars.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ github.sha }}"
           severity: 'CRITICAL'
