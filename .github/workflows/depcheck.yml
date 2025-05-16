@@ -21,8 +21,6 @@ jobs:
       - name: Build Docker image
         run: docker build -t ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ github.sha }} .
         shell: bash
-
-
       - name: Trivy Security Scan
         uses: aquasecurity/trivy-action@0.30.0
         with:
