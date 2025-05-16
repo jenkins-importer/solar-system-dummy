@@ -1,0 +1,33 @@
+name: Workflow Demo
+
+on: 
+  push:
+  workflow_dispatch:
+
+env:
+  GREETING: "hello"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Create a text file
+      run: echo "${{ env.GREETING }}, ${{ secrets.WORLD }}!" > hello.txt
+    - name: Archive text file
+      uses: actions/upload-artifact@v4
+      with:
+        name: hello-artifact
+        path: hello.txt
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Download text file
+      uses: actions/download-artifact@v4
+      with:
+        name: hello-artifact
+    - name: List file
+      run: ls
+    - name: Test file
+      run: cat hello.txt | grep -i "Hello, world!"
