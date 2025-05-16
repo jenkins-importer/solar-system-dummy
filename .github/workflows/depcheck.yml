@@ -34,7 +34,7 @@ jobs:
           exit-code: 1
           hide-progress: true
       - name: Upload Scan Report
-        if: ${{ always() }}
+        if: "${{ always() }}"
         uses: actions/upload-artifact@v4
         with:
           name: Trivy Report
