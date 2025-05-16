@@ -26,19 +26,15 @@ jobs:
         uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: "${{ vars.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ github.sha }}"
-          severity: CRITICAL
-          format: json
-          template: "@/contrib/html.tpl"
-          exit-code: '1'
-          hide-progress: 'true'
+          severity: 'CRITICAL'
+          format: 'template'
+          template: "@$HOME/.local/bin/trivy-bin/contrib/html.tpl"
+          exit-code: 1
+          hide-progress: true
+
 
       - run: ls -ltr
-      - name: Upload Scan Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-image-CRITICAL-results
-          path: trivy-image-CRITICAL-results.json
-          retention-days: 30
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4.1.0
         with:
