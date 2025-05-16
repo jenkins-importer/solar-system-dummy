@@ -17,10 +17,11 @@ jobs:
         - ubuntu-latest
       steps:
       - name: checkout
-        uses: actions/checkout@v4.1.0
-      - name: sh
+        uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t ${{ vars.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ github.sha }} .
         shell: bash
-        run: docker build -t siddharth67/solar-system:$GIT_COMMIT .
+
 
     Trivy_Vulnerability_Scanner:
       name: Trivy Vulnerability Scanner
@@ -32,7 +33,7 @@ jobs:
         uses: actions/checkout@v4.1.0
       - name: sh
         shell: bash
-        run: trivy image siddharth67/solar-system:$GIT_COMMIT --severity CRITICAL --exit-code 1 --quiet --format json -o trivy-image-CRITICAL-results.json
+        run: trivy image siddharth67/solar-system:${{ github.sha }}ICAL --exit-code 1 --quiet --format json -o trivy-image-CRITICAL-results.json
       - name: sh
         shell: bash
         run: trivy convert --format template --template "@/usr/local/share/trivy/templates/html.tpl" --output trivy-image-CRITICAL-results.html trivy-image-CRITICAL-results.json
