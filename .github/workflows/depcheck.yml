@@ -23,25 +23,20 @@ jobs:
         shell: bash
 
       - name: Trivy Security Scan
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: "${{ vars.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:${{ github.sha }}"
-          severity: 'CRITICAL'
-          format: 'template'
+          severity: CRITICAL
           template: "@$HOME/.local/bin/trivy-bin/contrib/html.tpl"
-          output: 'trivy-results.html'
-          exit-code: 1
+          format: trivy-results.html
+          exit-code: '1'
           hide-progress: true
-
-
-      - run: ls -ltr
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4.1.0
+      - name: Upload Scan Report
+        uses: actions/upload-artifact@v4
         with:
-          if-no-files-found: ignore
-          name: Trivy Image Critical Vul Report
-          path: "trivy-results.html"
+          name: Trivy Report
+          path: trivy-results.html
+
 
 
     # Trivy_Vulnerability_Scanner:
