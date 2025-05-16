@@ -29,6 +29,7 @@ jobs:
           severity: 'CRITICAL'
           format: 'template'
           template: "@$HOME/.local/bin/trivy-bin/contrib/html.tpl"
+          output: 'trivy-results.html'
           exit-code: 1
           hide-progress: true
 
@@ -40,7 +41,7 @@ jobs:
         with:
           if-no-files-found: ignore
           name: Trivy Image Critical Vul Report
-          path: "."
+          path: "trivy-results.html"
 
 
     # Trivy_Vulnerability_Scanner:
